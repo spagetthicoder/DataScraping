@@ -10,43 +10,36 @@ using System.Linq;
 using System.IO;
 
 
-namespace PAYEtest
+namespace BotUserTesting
 {
     [TestFixture]
-    public class HMRCtest1
+    public class HmrcTest
     {
-        private IWebDriver driver;
         private StringBuilder verificationErrors;
-        private string baseURL;
-        private bool acceptNextAlert = true;
-
+        private BotUser botUser;
+        private StreamWriter writer;
+            
         [SetUp]
         public void SetupTest()
         {
-            driver = new FirefoxDriver();
-            baseURL = "http://tools.hmrc.gov.uk/";
+            writer = new StreamWriter(@"D:\test\test1.csv") { AutoFlush = true };
+            botUser = new BotUser("Firefox", "http://tools.hmrc.gov.uk/");
             verificationErrors = new StringBuilder();
         }
 
         [TearDown]
         public void TeardownTest()
         {
-            try
-            {
-               //driver.Quit();
-            }
-            catch (Exception)
-            {
-                // Ignore errors if unable to close the browser
-            }
+            writer.Dispose();
+            //   botUser.Dispose();
             Assert.AreEqual("", verificationErrors.ToString());
         }
 
         [TestCase]
         public void TheHMRCtest1Test()
         {
-            int[] GrossPays = { 500, 600 };
-            string[] TaxCodes = {"700L","800L"};
+            int[] GrossPays = { 500, 600, 800, 900 };
+            string[] TaxCodes = { "700L", "800L", "900L", "1000L" };
             var csv = new StringBuilder();
             var newLine = "";
 
@@ -56,53 +49,63 @@ namespace PAYEtest
             string TotalDeductionsPerWeek = "";
             string YourTakeHomePayPerWeek = "";
             string EmployerNationalInsurancePerWeek = "";
+            var onErrorPageRestartLink = By.LinkText("restart the Tax Calculator");
+            var taxFieldSelector = By.Id("qss52Interviews_Screens_xintglobalglobal4");
+            var grossFieldSelector = By.Id("qss52Interviews_Screens_xintglobalglobal6");
+            var quickCalculatorLinkSelector = By.Id("Attributeb2Rules_GlobalProceduralRules_docglobalglobal");
 
-            
+            //botUser.GoTo("/hmrctaxcalculator/screen/Personal+Tax+Calculator/en-GB/summary?user=guest");
+
+            writer.WriteLine("header");
             foreach (var TaxCode in TaxCodes)
             {
 
-                foreach ( var GrossPay in GrossPays)
+                foreach (var GrossPay in GrossPays)
                 {
+                    Thread.Sleep(1000);
                     string myGrossPayString = GrossPay.ToString();
-                    driver.Navigate().GoToUrl(baseURL + "/hmrctaxcalculator/screen/Personal+Tax+Calculator/en-GB/summary?user=guest");
-                    driver.FindElement(By.LinkText("restart the Tax Calculator")).Click();
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(5000));
-                    driver.FindElement(By.Id("Attributeb2Rules_GlobalProceduralRules_docglobalglobal")).Click();
-                    driver.FindElement(By.Id("qss52Interviews_Screens_xintglobalglobal4")).Clear();
-                    driver.FindElement(By.Id("qss52Interviews_Screens_xintglobalglobal4")).SendKeys(TaxCode);
-                    driver.FindElement(By.Id("qss52Interviews_Screens_xintglobalglobal6")).Clear();
-                    driver.FindElement(By.Id("qss52Interviews_Screens_xintglobalglobal6")).SendKeys(myGrossPayString);
-                    Thread.Sleep(1000);
-                    driver.FindElement(By.Id("submit")).Click();
-                    Thread.Sleep(1000);
+                    if (botUser.IsPageContains(onErrorPageRestartLink))
+                    {
+                        botUser.WebDriver.FindElement(onErrorPageRestartLink).Click();
+                    }
+                    botUser.WebDriver.FindElement(quickCalculatorLinkSelector).Click();
+
+                    botUser.ReloadPageUntilContains(taxFieldSelector, 3);
+                    botUser.WebDriver.FindElement(taxFieldSelector).Clear();
+                    botUser.WebDriver.FindElement(taxFieldSelector).SendKeys(TaxCode);
+
+                    botUser.WebDriver.FindElement(grossFieldSelector).Clear();
+                    botUser.WebDriver.FindElement(grossFieldSelector).SendKeys(myGrossPayString);
+
+                    botUser.WebDriver.FindElement(By.Id("submit")).Click();
 
                     Console.WriteLine("----------------Test Output Begin ------------");
-                    
+
                     Console.WriteLine("GrossPay: " + GrossPay);
                     Console.WriteLine("TaxCode: " + TaxCode);
 
-                    var tableCells = driver.FindElements(By.TagName("td"));
-                  /**
-                    foreach (var cell in tableCells)
-                    {
-                        Console.Write(cell.Text);
-                    } 
-                  **/
+                    var tableCells = botUser.WebDriver.FindElements(By.TagName("td"));
+                    /**
+                      foreach (var cell in tableCells)
+                      {
+                          Console.Write(cell.Text);
+                      } 
+                    **/
 
                     foreach (var cell in tableCells.Skip(1).Take(1))
-                    {                      
+                    {
                         GrossPayPerWeek = cell.Text;
                         GrossPayPerWeek = GrossPayPerWeek.Replace("£", "");
                         Console.Write(GrossPayPerWeek);
                     }
-                    
+
                     foreach (var cell in tableCells.Skip(4).Take(1))
                     {
                         IncomeTaxPerWeek = cell.Text;
                         IncomeTaxPerWeek = IncomeTaxPerWeek.Replace("£", "");
                         Console.Write(IncomeTaxPerWeek);
                     }
-                    
+
                     foreach (var cell in tableCells.Skip(7).Take(1))
                     {
                         NationalInsurancePerWeek = cell.Text;
@@ -130,76 +133,31 @@ namespace PAYEtest
                         EmployerNationalInsurancePerWeek = EmployerNationalInsurancePerWeek.Replace("£", "");
                         Console.Write(EmployerNationalInsurancePerWeek);
                     }
-                  
-                  //  Thread.Sleep(5000);
+
+                    //  Thread.Sleep(5000);
 
                     Console.WriteLine("----------------Test Output End --------------");
                     /*foreach (var cell in tableCells.Skip(1).Take(1))
                     {
                         Console.Write(cell.Text);
                     }*/
-                    
-                    driver.FindElement(By.CssSelector("input[type=\"button\"]")).Click();
-                   
-                    driver.FindElement(By.Id("ACTIONOK")).Click();
+
+                    botUser.WebDriver.FindElement(By.CssSelector("input[type=\"button\"]")).Click();
+                    botUser.WebDriver.FindElement(By.Id("ACTIONOK")).Click();
 
                     newLine = GrossPay + ", " + IncomeTaxPerWeek + ", " + TaxCode + ", " + NationalInsurancePerWeek + ", " + GrossPayPerWeek + ", " + "1, " + YourTakeHomePayPerWeek + ", " + IncomeTaxPerWeek + ", " + NationalInsurancePerWeek + ", " + EmployerNationalInsurancePerWeek;
-                                       
-                    csv.AppendLine(newLine);  
+
+                    writer.WriteLine(newLine);
+                    //csv.AppendLine(newLine);
                 }
             }
 
-            File.WriteAllText("D:\\test\\test1.csv", csv.ToString());
-              
-           
-           // File.WriteAllText("D:\\test\\test1.csv", "Test string");
-        }
-        private bool IsElementPresent(By by)
-        {
-            try
-            {
-                driver.FindElement(by);
-                return true;
-            }
-            catch (NoSuchElementException)
-            {
-                return false;
-            }
-        }
+            File.WriteAllText(@"D:\test\test1.csv", csv.ToString());
 
-        private bool IsAlertPresent()
-        {
-            try
-            {
-                driver.SwitchTo().Alert();
-                return true;
-            }
-            catch (NoAlertPresentException)
-            {
-                return false;
-            }
-        }
 
-        private string CloseAlertAndGetItsText()
-        {
-            try
-            {
-                IAlert alert = driver.SwitchTo().Alert();
-                string alertText = alert.Text;
-                if (acceptNextAlert)
-                {
-                    alert.Accept();
-                }
-                else
-                {
-                    alert.Dismiss();
-                }
-                return alertText;
-            }
-            finally
-            {
-                acceptNextAlert = true;
-            }
+            // File.WriteAllText("D:\\test\\test1.csv", "Test string");
         }
     }
 }
+    
+
