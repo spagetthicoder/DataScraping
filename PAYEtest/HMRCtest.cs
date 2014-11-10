@@ -38,8 +38,8 @@ namespace BotUserTesting
         [TestCase]
         public void TheHMRCtest1Test()
         {
-            int[] GrossPays = { 500, 600, 800, 900 };
-            string[] TaxCodes = { "700L", "800L", "900L", "1000L" };
+            int[] GrossPays = { 500, 600, 700, 800, 900 };
+            string[] TaxCodes = { "100L", "200L", "300L", "400L" };
             var csv = new StringBuilder();
             var newLine = "";
 
@@ -56,7 +56,8 @@ namespace BotUserTesting
 
             //botUser.GoTo("/hmrctaxcalculator/screen/Personal+Tax+Calculator/en-GB/summary?user=guest");
 
-            writer.WriteLine("header");
+            writer.WriteLine("*************************HOWTO: Place test cases here line by line*******************************");
+            writer.WriteLine("GrossPay,	IncomeTax,	TaxCode,	NationalInsuranceEmployee,	WeekGrossWage,	WeekNo,	ExpectedWeekNetPay,	ExpectedWeekIncomeTax,	ExpectedWeekNationalInsurance,	ExpectedWeekNIEmployer");
             foreach (var TaxCode in TaxCodes)
             {
 
@@ -85,12 +86,12 @@ namespace BotUserTesting
                     Console.WriteLine("TaxCode: " + TaxCode);
 
                     var tableCells = botUser.WebDriver.FindElements(By.TagName("td"));
-                    /**
+                    
                       foreach (var cell in tableCells)
                       {
                           Console.Write(cell.Text);
                       } 
-                    **/
+                    
 
                     foreach (var cell in tableCells.Skip(1).Take(1))
                     {
@@ -127,7 +128,7 @@ namespace BotUserTesting
                         Console.Write(YourTakeHomePayPerWeek);
                     }
 
-                    foreach (var cell in tableCells.Skip(13).Take(1))
+                    foreach (var cell in tableCells.Skip(16).Take(1))
                     {
                         EmployerNationalInsurancePerWeek = cell.Text;
                         EmployerNationalInsurancePerWeek = EmployerNationalInsurancePerWeek.Replace("£", "");
@@ -137,15 +138,12 @@ namespace BotUserTesting
                     //  Thread.Sleep(5000);
 
                     Console.WriteLine("----------------Test Output End --------------");
-                    /*foreach (var cell in tableCells.Skip(1).Take(1))
-                    {
-                        Console.Write(cell.Text);
-                    }*/
+    
 
                     botUser.WebDriver.FindElement(By.CssSelector("input[type=\"button\"]")).Click();
                     botUser.WebDriver.FindElement(By.Id("ACTIONOK")).Click();
 
-                    newLine = GrossPay + ", " + IncomeTaxPerWeek + ", " + TaxCode + ", " + NationalInsurancePerWeek + ", " + GrossPayPerWeek + ", " + "1, " + YourTakeHomePayPerWeek + ", " + IncomeTaxPerWeek + ", " + NationalInsurancePerWeek + ", " + EmployerNationalInsurancePerWeek;
+                    newLine = 0 + ", " + 0 + ", " + TaxCode + ", " + 0 + ", " + GrossPay + ", " + 1 + ", " + YourTakeHomePayPerWeek + ", " + IncomeTaxPerWeek + ", " + NationalInsurancePerWeek + ", " + EmployerNationalInsurancePerWeek;
 
                     writer.WriteLine(newLine);
                     //csv.AppendLine(newLine);
