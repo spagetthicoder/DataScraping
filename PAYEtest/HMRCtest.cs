@@ -87,10 +87,10 @@ namespace BotUserTesting
 
                     var tableCells = botUser.WebDriver.FindElements(By.TagName("td"));
                     
-                      foreach (var cell in tableCells)
-                      {
-                          Console.Write(cell.Text);
-                      } 
+                      //foreach (var cell in tableCells)
+                      //{
+                      //    Console.Write(cell.Text);
+                      //} 
                     
 
                     foreach (var cell in tableCells.Skip(1).Take(1))
