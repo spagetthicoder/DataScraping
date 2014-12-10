@@ -1,3 +1,4 @@
+C:\Users\Nikolay\Documents\Visual Studio 2013\Projects\PAYEtest\PAYEtest\bin\Debug\PAYEtest.dll.config
 C:\Users\Nikolay\Documents\Visual Studio 2013\Projects\PAYEtest\PAYEtest\bin\Debug\PAYEtest.dll
 C:\Users\Nikolay\Documents\Visual Studio 2013\Projects\PAYEtest\PAYEtest\bin\Debug\PAYEtest.pdb
 C:\Users\Nikolay\Documents\Visual Studio 2013\Projects\PAYEtest\PAYEtest\bin\Debug\nunit.framework.dll

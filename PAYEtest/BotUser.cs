@@ -78,7 +78,7 @@ namespace BotUserTesting
             actions.KeyDown(Keys.Control).SendKeys(Keys.F5);
         }
 
-        public void WaitUntilPageLoad(int timeoutSeconds = 30)
+        public void WaitUntilPageLoad(int timeoutSeconds = 40)
         {
             IWait<IWebDriver> wait = new WebDriverWait(_webDriver, TimeSpan.FromSeconds(timeoutSeconds));
             wait.Until(d => d.ExecuteJavaScript<string>("return document.readyState").Equals("complete"));
@@ -104,8 +104,9 @@ namespace BotUserTesting
 
         public bool IsPageContains(By findBy)
         {
-            var elements = _webDriver.FindElements(findBy);
-            return elements.Any();
+                var elements = _webDriver.FindElements(findBy);
+                return elements.Any();
+            
         }
 
         public void Dispose()
